@@ -1,6 +1,5 @@
 module PhotoGroove exposing (main)
 
-import Array exposing (Array)
 import Browser
 import Browser.Dom exposing (Error)
 import Html exposing (Html, button, div, h1, h3, img, input, label, text)
@@ -126,7 +125,7 @@ update msg model =
                 Loading ->
                     ( model, Cmd.none )
 
-                Errored errorMessage ->
+                Errored _ ->
                     ( model, Cmd.none )
 
         ClickedSize size ->
@@ -145,7 +144,7 @@ selectUrl url status =
         Loading ->
             status
 
-        Errored errorMessage ->
+        Errored _ ->
             status
 
 
