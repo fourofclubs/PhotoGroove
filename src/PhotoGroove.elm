@@ -5,6 +5,7 @@ import Browser.Dom exposing (Error)
 import Html exposing (Html, button, div, h1, h3, img, input, label, text)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Http
 import Random
 
 
@@ -29,6 +30,7 @@ type Msg
     | ClickedSize ThumbnailSize
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
+    | GotPhotos (Result Http.Error String)
 
 
 type Status
@@ -134,6 +136,21 @@ update msg model =
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
 
+        GotPhotos (Ok responseStr) ->
+            case String.split "," responseStr of
+                (firstUrl :: _) as urls ->
+                    let
+                        photos =
+                            List.map Photo urls
+                    in
+                    ( { model | status = Loaded photos firstUrl }, Cmd.none )
+
+                [] ->
+                    ( { model | status = Errored "0 Photos found" }, Cmd.none )
+
+        GotPhotos (Err _) ->
+            ( { model | status = Errored "Server error!" }, Cmd.none )
+
 
 selectUrl : String -> Status -> Status
 selectUrl url status =
@@ -148,6 +165,14 @@ selectUrl url status =
             status
 
 
+initialCmd : Cmd Msg
+initialCmd =
+    Http.get
+        { url = "http://elm-in-action.com/photos/list"
+        , expect = Http.expectString GotPhotos
+        }
+
+
 initialModel : Model
 initialModel =
     { status = Loading
@@ -158,7 +183,7 @@ initialModel =
 main : Program () Model Msg
 main =
     Browser.element
-        { init = always ( initialModel, Cmd.none )
+        { init = always ( initialModel, initialCmd )
         , view = view
         , update = update
         , subscriptions = always Sub.none
