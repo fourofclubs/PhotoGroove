@@ -51,7 +51,7 @@ view model =
                 viewLoaded photos selectedUrl model.chosenSize
 
             Loading ->
-                []
+                [ text ("Loading...") ]
 
             Errored errorMessage ->
                 [ text ("Error: " ++ errorMessage) ]
